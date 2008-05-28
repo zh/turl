@@ -1,0 +1,32 @@
+TinyURL Ramaze Application
+===========================
+
+Required gems
+--------------
+
+sqlite3-ruby, sequel, validatable, ramaze, thin
+
+
+Features
+---------
+
+- everything in one file - model, view, controller
+- auto create the database if missing 
+- url hits counting
+- API for command-line access - can shorten urls and restore the original urls
+
+
+Usage
+------
+
+ $ curl -O turl.rb http://github.com/zh/turl/tree/master/turl.rb
+ $ ruby turl.rb
+ # browse http://localhost:7000/
+ # shorten url
+ $ curl http://admin:secret@localhost:7000/_api?url=http://github.com/zh/turl/
+ # restore the original url
+ $ curl http://admin:secret@localhost:7000/_api?turl=abc
+
+Do not forget to change the BASE_URL and LOGINS values. By default the database 
+file (sqlite3) will be created in the same directory with turl.rb. If this is not 
+acceptable, change the DB_FILE line.
