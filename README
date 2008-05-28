@@ -11,7 +11,8 @@ Features
 ---------
 
 - everything in one file - model, view, controller
-- auto create the database if missing 
+- auto create the database if missing
+- unique urls in the database 
 - url hits counting
 - API for command-line access - can shorten urls and restore the original urls
 
@@ -19,7 +20,7 @@ Features
 Usage
 ------
 
- $ curl -O turl.rb http://github.com/zh/turl/tree/master/turl.rb
+ $ curl -O turl.rb "http://github.com/zh/turl/tree/master%2Fturl.rb?raw=true"
  $ ruby turl.rb
  # browse http://localhost:7000/
  # shorten url (turl)
