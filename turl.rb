@@ -59,6 +59,11 @@ class TinyURL < Sequel::Model(:turl)
     t.url
   end
 
+  def self.count(turl)
+    return 0 unless t = TinyURL[:id => turl.to_i(36)]
+    t.hits
+  end
+
 end
 
 TinyURL.create_table unless TinyURL.table_exists?
@@ -97,11 +102,13 @@ class MainController < Ramaze::Controller
     "Tiny URL: <a href=\"#{turl}\">#{turl}</a><br/><br/>"
   end
 
-  # _api?url=http://... will return short url
-  # _ari?turl=.. will restore the original url
+  # _api?turl=http://... will return short url
+  # _ari?url=.. will restore the original url
+  # _ari?hits=.. will return the number of hits to given turl
   def _api
-    res = TinyURL.pack(request[:url]) if request[:url]
-    res = TinyURL.unpack(request[:turl].split('/').last) if request[:turl]
+    res = TinyURL.pack(request[:turl]) if request[:turl]
+    res = TinyURL.unpack(request[:url].split('/').last) if request[:url]
+    res = TinyURL.count(request[:hits].split('/').last).to_s if request[:hits]
     res = '' unless res
     respond res
   end
