@@ -5,8 +5,8 @@ require 'sequel'
 require 'validatable'
 require 'ramaze'
 
-DB_FILE = File.join(File.dirname(__FILE__),"turl.db")
-DB = Sequel.open("sqlite:///#{DB_FILE}")
+DB_FILE = __DIR__/'turl.db'
+DB = Sequel.connect("sqlite://#{DB_FILE}")
 
 BASE_URL = 'http://localhost:7000/'.freeze
 
@@ -39,7 +39,7 @@ class TinyURL < Sequel::Model(:turl)
 
   def self.add(uri)
     t = TinyURL.create(:url => uri)
-    return '' unless t.valid?
+    return '' unless t && t.valid?
     t.save!
     return t.id.to_s(36)
   end
