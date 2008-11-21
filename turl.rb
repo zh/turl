@@ -88,7 +88,7 @@ class MainController < Ramaze::Controller
   
   layout :_page
 
-  def index turl=nil
+  def index turl=nil, *params
     if turl
       url = TinyURL.unpack(turl)
       redirect(url ? url : Rs())
@@ -134,6 +134,8 @@ class MainController < Ramaze::Controller
   end
 end
 
+Ramaze::Log.loggers = [ Ramaze::Logger::Informer.new( File.join(__DIR__, 'turl.log'))]
+
 if __FILE__ == $0
-  Ramaze.start :adapter => :thin, :port => 7000
+  Ramaze.start :adapter => :mongrel, :port => 7000
 end
