@@ -134,8 +134,13 @@ class MainController < Ramaze::Controller
   end
 end
 
-Ramaze::Log.loggers = [ Ramaze::Logger::Informer.new( File.join(__DIR__, 'turl.log'))]
 
 if __FILE__ == $0
-  Ramaze.start :adapter => :mongrel, :port => 7000
+  Ramaze::Log.loggers = [ Ramaze::Logger::Informer.new( File.join(__DIR__, 'turl.log'))]
+  begin 
+    require 'mongrel'
+    Ramaze.start :adapter => :mongrel, :port => 7000
+  rescue LoadError 
+    Ramaze.start :adapter => :webrick, :port => 7000
+  end
 end
