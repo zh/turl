@@ -2,13 +2,14 @@
 
 require 'rubygems'
 require 'sequel'
-require 'validatable'
 require 'ramaze'
 
-DB_FILE = __DIR__/'turl.db'
-DB = Sequel.connect("sqlite://#{DB_FILE}")
-
+DB = Sequel.sqlite('turl.db')
 BASE_URL = 'http://localhost:7000/'.freeze
+
+Sequel::Model.plugin(:schema)
+Sequel::Model.plugin(:hook_class_methods)
+Sequel::Model.plugin(:validation_class_methods)
 
 #
 #  Model
@@ -24,8 +25,6 @@ class TinyURL < Sequel::Model(:turl)
     index [:hits]
   end
 
-  include Validatable
-
   validates do
     presence_of :url
     format_of :url, :with =>
@@ -34,13 +33,13 @@ class TinyURL < Sequel::Model(:turl)
   end
 
   after_create do
-    update_values(:created => Time.now, :hits => 1)
+    update(:created => Time.now, :hits => 1)
   end
 
   def self.add(uri)
     t = TinyURL.create(:url => uri)
     return '' unless t && t.valid?
-    t.save!
+    t.save(:validate => false)
     return t.id.to_s(36)
   end
 
@@ -55,7 +54,7 @@ class TinyURL < Sequel::Model(:turl)
 
   def self.unpack(turl)
     return nil unless t = TinyURL[:id => turl.to_i(36)]
-    t.update_values(:hits => t.hits.to_i + 1)
+    t.update(:hits => t.hits.to_i + 1)
     t.url
   end
 
@@ -85,19 +84,19 @@ class MainController < Ramaze::Controller
     respond 'Unauthorized', 401 unless auth = request.env['HTTP_AUTHORIZATION'] and
                                        LOGINS.include? auth.split.last
   end
-  
+
   layout :_page
 
   def index turl=nil, *params
     if turl
       url = TinyURL.unpack(turl)
-      redirect(url ? url : Rs())
+      redirect(url ? url : rs())
     end
     ""
   end
 
   def _add
-    redirect(Rs()) unless request.post?
+    redirect(rs()) unless request.post?
     turl = TinyURL.pack(request[:url])
     "Tiny URL: <a href=\"#{turl}\">#{turl}</a><br/><br/>"
   end
@@ -123,7 +122,7 @@ class MainController < Ramaze::Controller
     #@content
     <form id="tinyurl" method="post" action="/_add">
       <div>
-        Enter long URL: 
+        Enter long URL:
         <input id="url" name="url" type="text" />
         <input type="submit" value="Pack" />
       </div>
@@ -136,11 +135,11 @@ end
 
 
 if __FILE__ == $0
-  Ramaze::Log.loggers = [ Ramaze::Logger::Informer.new( File.join(__DIR__, 'turl.log'))]
-  begin 
+  Ramaze::Log.loggers = [Logger.new('turl.log')]
+  begin
     require 'mongrel'
     Ramaze.start :adapter => :mongrel, :port => 7000
-  rescue LoadError 
+  rescue LoadError
     Ramaze.start :adapter => :webrick, :port => 7000
   end
 end
